@@ -6,8 +6,6 @@ const public_users = express.Router();
 
 
 public_users.post("/register", (req,res) => {
-  //Write your code here
-  //return res.status(300).json({message: "Yet to be implemented"});
   // Check if email is provided in the request body
     if (req.body.username) {
         // Create or update friend's details based on provided email
@@ -25,66 +23,110 @@ public_users.post("/register", (req,res) => {
     res.send("Customer succesfully registered! Now you can login");
 });
 
+
 // Get the book list available in the shop
 public_users.get('/',function (req, res) {
-  //Write your code here
-  return res.send(JSON.stringify(books,null,4));
-  //return res.status(300).json({message: "Yet to be implemented"});
+      return new Promise((resolve, reject) => {
+        try {
+            resolve(books);
+        } catch (error) {
+            reject(error);
+        }
+    })
+    .then((books) => {
+        res.send(JSON.stringify(books, null, 4));
+    })
+    .catch((error) => {
+        res.status(500).send({ error: 'An error occurred while fetching the books.' });
+    });
 });
+
 
 // Get book details based on ISBN
 public_users.get('/isbn/:isbn',function (req, res) {
-  //Write your code here
-  //return res.status(300).json({message: "Yet to be implemented"});
     const isbn = req.params.isbn;
-    res.send(books[isbn]);
+
+    new Promise((resolve, reject) => {
+        const book = books[isbn];
+        if (book) {
+            resolve(book);
+        } else {
+            reject(new Error('Book not found'));
+        }
+    })
+    .then(book => {
+        res.send(book);
+    })
+    .catch(err => {
+        res.status(404).send({ error: err.message });
+    });
  });
+
   
 // Get book details based on author
 public_users.get('/author/:author',function (req, res) {
-  //Write your code here
-  //return res.status(300).json({message: "Yet to be implemented"});
-  const author = req.params.author; // Get the author from request parameters
-  const matchedBooks = []; // Create an array to store matched books
-
-  // Iterate over each key in the books object
-  const keys = Object.keys(books);
-  for (let i = 0; i < keys.length; i++) {
-      const book = books[keys[i]]; // Get the book using the key
-      if (book.author === author) { // Check if the author matches
-          matchedBooks.push(book); // If so, push it to the matchedBooks array
+  const author = req.params.author;
+  
+  function findBooksByAuthor(author) {
+    return new Promise((resolve, reject) => {
+      const matchedBooks = [];
+      const keys = Object.keys(books);
+      for (let i = 0; i < keys.length; i++) {
+          const book = books[keys[i]];
+          if (book.author === author) {
+              matchedBooks.push(book);
+          }
       }
+
+      if (matchedBooks.length > 0) {
+          resolve(matchedBooks);
+      } else {
+          reject({ message: "No books found for this author" });
+      }
+    });
   }
-  // Check if any books were found
-  if (matchedBooks.length > 0) {
-      res.status(200).json(matchedBooks); // Send the matched books as a response
-  } else {
-      res.status(404).json({ message: "No books found for this author" }); // No books found
-  }
+  findBooksByAuthor(author)
+    .then(matchedBooks => {
+      res.status(200).json(matchedBooks);
+    })
+    .catch(err => {
+      res.status(404).json(err);
+    });
 });
+
+
 
 // Get all books based on title
 public_users.get('/title/:title',function (req, res) {
-  //Write your code here
-  //return res.status(300).json({message: "Yet to be implemented"});
-  const title = req.params.title; // Get the title from request parameters
-  const matchedBooks = []; // Create an array to store matched books
-
-  // Iterate over each key in the books object
-  const keys = Object.keys(books);
-  for (let i = 0; i < keys.length; i++) {
-      const book = books[keys[i]]; // Get the book using the key
-      if (book.title === title) { // Check if the author matches
-          matchedBooks.push(book); // If so, push it to the matchedBooks array
+    const title = req.params.title;
+  
+  function findBooksByTitle(title) {
+    return new Promise((resolve, reject) => {
+      const matchedBooks = [];
+      const keys = Object.keys(books);
+      for (let i = 0; i < keys.length; i++) {
+          const book = books[keys[i]];
+          if (book.title === title) {
+              matchedBooks.push(book);
+          }
       }
+
+      if (matchedBooks.length > 0) {
+          resolve(matchedBooks);
+      } else {
+          reject({ message: "No books found for this title" });
+      }
+    });
   }
-  // Check if any books were found
-  if (matchedBooks.length > 0) {
-      res.status(200).json(matchedBooks); // Send the matched books as a response
-  } else {
-      res.status(404).json({ message: "No books found for this title" }); // No books found
-  }
+  findBooksByTitle(title)
+    .then(matchedBooks => {
+      res.status(200).json(matchedBooks);
+    })
+    .catch(err => {
+      res.status(404).json(err);
+    });
 });
+
 
 //  Get book review
 public_users.get('/review/:isbn',function (req, res) {
