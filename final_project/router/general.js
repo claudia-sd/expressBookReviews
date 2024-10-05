@@ -7,7 +7,22 @@ const public_users = express.Router();
 
 public_users.post("/register", (req,res) => {
   //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+  //return res.status(300).json({message: "Yet to be implemented"});
+  // Check if email is provided in the request body
+    if (req.body.username) {
+        // Create or update friend's details based on provided email
+        users[req.body.username] = {
+            "password": req.body.password,
+            "firstName": req.body.firstName,
+            "lastName": req.body.lastName,
+            // Add similarly for DOB
+        };
+    }else{
+        res.send("Please enter an username");
+    };
+    // Send response indicating user addition
+    //res.send("The user" + (' ') + (req.body.username) + " Has been added!");
+    res.send("Customer succesfully registered! Now you can login");
 });
 
 // Get the book list available in the shop
@@ -40,7 +55,6 @@ public_users.get('/author/:author',function (req, res) {
           matchedBooks.push(book); // If so, push it to the matchedBooks array
       }
   }
-
   // Check if any books were found
   if (matchedBooks.length > 0) {
       res.status(200).json(matchedBooks); // Send the matched books as a response
@@ -64,7 +78,6 @@ public_users.get('/title/:title',function (req, res) {
           matchedBooks.push(book); // If so, push it to the matchedBooks array
       }
   }
-
   // Check if any books were found
   if (matchedBooks.length > 0) {
       res.status(200).json(matchedBooks); // Send the matched books as a response
